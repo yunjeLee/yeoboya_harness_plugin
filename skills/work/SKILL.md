@@ -1,6 +1,6 @@
 ---
 name: work
-description: "기능 작업의 닫힌 루프 엔진. 입력 폼 수집 → /brainstorming 계획 → 계획 검토 agent(7축) → .harness/run-{id}.md 상태 기록 → superpower TDD 구현 → 완료기준(실행명령) 검증 → 실패 시 bug-fix. /work, 작업 시작, 기능 구현해줘, 계획 세우고 구현 요청 시 사용한다."
+description: "기능 작업의 닫힌 루프 엔진. 입력 폼 수집 → (선택) /brainstorming 계획 → 계획이 있으면만 검토 agent(7축) → .harness/run-{id}.md 상태 기록 → superpower TDD 구현 → 완료기준(실행명령) 검증 → 실패 시 bug-fix. /work, 작업 시작, 기능 구현해줘, 계획 세우고 구현 요청 시 사용한다."
 model: opus
 ---
 
@@ -25,11 +25,16 @@ model: opus
    - `@docs/rules/TESTING.md` 의 검증 명령어(build / lint / unit / integration / E2E)를 단일 출처로 참조하고, 입력에 등장한 모듈명을 끼워 명령을 조립한다. (예: "a·b 통합테스트" → `./gradlew :a:test :b:test` 또는 TESTING.md 가 정의한 통합테스트 태스크)
    - 조립한 명령 목록을 **사람에게 확인**받는다. (잘못된 명령이 bug-fix 루프의 입력이 되는 걸 막음)
    - 이후 단계·저장은 모두 **확정된 실행 명령**으로 다룬다. (bug-fix 루프의 입력원)
-3. **계획 수립**: superpower `/brainstorming`.
-4. **계획 검토**: `plan-reviewer` 에이전트(7축) → 사람 게이트.
+3. **계획 분기 (선택)**: 요구사항에 따라 계획 단계를 탄다/건너뛴다.
+   - 사용자가 `/brainstorming` 을 요청했거나 `xxx.md` 계획 문서를 입력 → 계획 경로 (superpower `/brainstorming`).
+   - 계획 없이 바로 구현 요청 → 계획 건너뜀. `.harness/run-{id}.md` 에 "계획 생략" 1줄 기록 (세션 이어받을 때 계획 부재 사유 추적용).
+4. **계획 검토 (조건부)**: 계획이 존재할 때만 `plan-reviewer` 에이전트(7축) → 사람 게이트.
+   - 계획이 없으면 이 단계 건너뜀.
    - 하네스(CONVENTIONS / ARCHITECTURE) 위반 발견 시 → `/harness-check` 로 분기.
+   - ⚠️ 계획 생략 경로에서는 6축(하네스 정합성) 사전 게이트가 없다 → 6번 TDD 단계의 가드로 회수한다.
 5. **상태 기록**: `.harness/run-{id}.md` 에 계획 / 현재 단계 / bug-fix 시도 횟수 / 남은 완료기준(확정 명령) 기록 (멀티세션 영속화 — 세션이 끊겨도 이어받음).
 6. **TDD 구현**: superpower TDD (테스트 먼저). 코드는 무조건 TDD 로 작성.
+   - 계획 생략 경로일 때: 구현 중 CONVENTIONS / ARCHITECTURE 위반을 감지하면 즉시 멈추고 `/harness-check` 로 분기 (사라진 사전 게이트를 여기서 회수).
 7. **완료기준 검증**: 확정된 완료 기준 명령을 실행. 실패 시 → `bug-fix` 로 분기.
 
 ## 상태 파일 `.harness/run-{id}.md` 골격
