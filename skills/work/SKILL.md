@@ -1,6 +1,6 @@
 ---
 name: work
-description: "기능 작업의 닫힌 루프 엔진. 입력 폼 수집 → (선택) /brainstorming 계획 → 계획이 있으면만 검토 agent(7축) → .harness/run-{id}.md 상태 기록 → superpower TDD 구현 → 완료기준(실행명령) 검증 → 실패 시 bug-fix. /work, 작업 시작, 기능 구현해줘, 계획 세우고 구현 요청 시 사용한다."
+description: "기능 작업의 닫힌 루프 엔진. 입력 폼 수집 → (선택) /brainstorming 계획 → 계획이 있으면만 검토 agent(7축) → .harness/run-{id}.md 상태 기록 → superpower TDD 구현(unit) → 통합/E2E test-after 작성 → 완료기준(실행명령) 검증 → 실패 시 bug-fix. /work, 작업 시작, 기능 구현해줘, 계획 세우고 구현 요청 시 사용한다."
 model: opus
 ---
 
@@ -25,6 +25,7 @@ model: opus
    - `@docs/rules/TESTING.md` 의 검증 명령어(build / lint / unit / integration / E2E)를 단일 출처로 참조하고, 입력에 등장한 모듈명을 끼워 명령을 조립한다. (예: "a·b 통합테스트" → `./gradlew :a:test :b:test` 또는 TESTING.md 가 정의한 통합테스트 태스크)
    - 조립한 명령 목록을 **사람에게 확인**받는다. (잘못된 명령이 bug-fix 루프의 입력이 되는 걸 막음)
    - 이후 단계·저장은 모두 **확정된 실행 명령**으로 다룬다. (bug-fix 루프의 입력원)
+   - ⚠️ **부트스트랩 가드**: TESTING.md 의 통합/E2E 검증 명령·작성 규칙이 비어 있으면(그린필드) → 명령 조립을 멈추고 `/harness`(또는 `/harness-edit testing`) 로 분기해 테스트 스택을 먼저 확정한다. (빈 규칙이 루프 입력이 되는 걸 차단 — bug-fix 5회→harness-check 와 같은 원리)
 3. **계획 분기 (선택)**: 요구사항에 따라 계획 단계를 탄다/건너뛴다.
    - 사용자가 `/brainstorming` 을 요청했거나 `xxx.md` 계획 문서를 입력 → 계획 경로 (superpower `/brainstorming`).
    - 계획 없이 바로 구현 요청 → 계획 건너뜀. `.harness/run-{id}.md` 에 "계획 생략" 1줄 기록 (세션 이어받을 때 계획 부재 사유 추적용).
@@ -35,10 +36,17 @@ model: opus
 5. **상태 기록**: `.harness/run-{id}.md` 에 계획 / 현재 단계 / bug-fix 시도 횟수 / 남은 완료기준(확정 명령) 기록 (멀티세션 영속화 — 세션이 끊겨도 이어받음).
 6. **TDD 구현**: superpower TDD (테스트 먼저). 코드는 무조건 TDD 로 작성.
    - 계획 생략 경로일 때: 구현 중 CONVENTIONS / ARCHITECTURE 위반을 감지하면 즉시 멈추고 `/harness-check` 로 분기 (사라진 사전 게이트를 여기서 회수).
-7. **완료기준 검증**: 확정된 완료 기준 명령을 실행. 실패 시 → `bug-fix` 로 분기.
+   - 범위: TDD 는 *작성 중인 코드 단위*(함수/클래스)와 *한 모듈 안* sociable unit 까지 책임진다. 모듈 경계 밖은 6.5 가 채운다.
+6.5. **통합/E2E 테스트 작성 (test-after)**: TDD 로 코드가 동작한 뒤, 모듈 경계를 검증한다.
+   - **작성 범위**: 이번 변경이 가로지른 모듈 경계를 git diff·임포트로 탐지해 그것만 작성한다. 완료 기준에 경계가 명시됐으면(예: "core·data 통합") 그걸 우선한다.
+   - **레벨 분기** (TESTING.md 기준):
+     - JVM 통합(Robolectric/in-memory) → 작성 후 즉시 실행해 통과 확인. 실패 시 → `bug-fix`.
+     - 기기 E2E(Espresso/Maestro) → 이번 work 가 *플로우를 완성시킨 경우만* 작성. 코드·실행 명령만 준비하고 **자동 실행하지 않는다**. `.harness/run-{id}.md` 에 "E2E: 수동 실행 대기" 기록.
+   - **가드**: test-after 사각지대 방지 — "크래시 안 남"이 아니라 경계를 건너는 데이터·계약을 실제로 단언한다. (규칙은 TESTING.md 단일 출처)
+7. **완료기준 검증**: 확정된 완료 기준 명령을 실행. 단 통합은 **전체 JVM 스위트**를 돌려 이번에 안 건드린 경계의 회귀까지 검출한다. 실패 시 → `bug-fix` 로 분기.
 
 ## 상태 파일 `.harness/run-{id}.md` 골격
-- 요구/완료기준(명령) / 계획 요약 / 현재 단계 / bug-fix 시도 횟수 / 남은 완료기준 체크리스트
+- 요구/완료기준(명령) / 계획 요약 / 현재 단계 / bug-fix 시도 횟수 / 남은 완료기준 체크리스트 / **E2E 수동 실행 대기 목록**
 
 ## 원칙
 - 핸드오프는 파일 경유: 계획 검토 결과를 파일/메인 게이트로 받는다.
