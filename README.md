@@ -9,6 +9,11 @@
 3. **hook 은 안전장치만.** 검증·테스트·카운터는 스킬 내부에서.
 4. **상태를 파일로 영속화.** `.harness/run-{id}.md` 로 세션 간 인수인계.
 
+## 사전 요구
+- **`superpowers` 플러그인 (필수)** — `work` 가 `superpowers:brainstorming`(계획), `superpowers:test-driven-development`(TDD) 를 호출한다. 미설치 시 `/work` 의 계획·TDD 단계가 동작하지 않는다.
+- **Notion MCP (선택)** — `harness-check` 가 진단을 Notion 에 기록한다. 없으면 `docs/harness-issues/` 로컬 폴백으로 자동 전환된다.
+- **호스트 환경** — bash + git. (hook 은 외부 런타임 의존 없음)
+
 ## 구성
 
 ### Skills (8)
@@ -35,7 +40,7 @@
 ## 사용 Flow
 ```
 0. /harness-root, /harness-module  →  검증 agent(6축) → 사람 승인
-1. /work  →  입력 → /brainstorming → 계획 검토 agent(7축) → 사람 게이트
+1. /work  →  입력 → superpowers:brainstorming → 계획 검토 agent(7축) → 사람 게이트
             → .harness/run-{id}.md 기록
 2. TDD 코드 작성 (자동)
 3. 완료기준(실행명령) 검증 (자동)

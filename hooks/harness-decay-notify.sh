@@ -8,24 +8,9 @@ set -uo pipefail
 
 input=$(cat)
 
-# Fast path: git commit 이 아니면 node 파싱 skip
+# matcher=Bash + raw "git commit" 매칭으로 충분. node 불필요.
+# 알림 hook 이므로 오탐이 나도 exit 0(통과) — commit 을 막지 않는다.
 case "$input" in
-  *"git commit"*) ;;
-  *) exit 0 ;;
-esac
-
-parsed=$(printf '%s' "$input" | node -e "
-let s='';process.stdin.on('data',d=>s+=d).on('end',()=>{
-  try{const j=JSON.parse(s);
-    console.log((j.tool_name||'')+'\t'+((j.tool_input&&j.tool_input.command)||''));
-  }catch(e){console.log('\t')}
-});
-")
-tool_name="${parsed%%$'\t'*}"
-command="${parsed#*$'\t'}"
-
-[ "$tool_name" != "Bash" ] && exit 0
-case "$command" in
   *"git commit"*) ;;
   *) exit 0 ;;
 esac

@@ -8,18 +8,9 @@ set -uo pipefail
 
 input=$(cat)
 
-# Fast path: Bash 가 아니면 즉시 통과
-parsed=$(printf '%s' "$input" | node -e "
-let s='';process.stdin.on('data',d=>s+=d).on('end',()=>{
-  try{const j=JSON.parse(s);
-    console.log((j.tool_name||'')+'\t'+((j.tool_input&&j.tool_input.command)||''));
-  }catch(e){console.log('\t')}
-});
-")
-tool_name="${parsed%%$'\t'*}"
-command="${parsed#*$'\t'}"
-
-[ "$tool_name" != "Bash" ] && exit 0
+# matcher 가 이미 Bash 로 한정 → tool_name 재파싱 불필요.
+# raw input 전체를 위험 패턴으로 검사한다. 외부 런타임(node/jq) 의존 0.
+# 파싱 실패 개념이 없으므로 fail-open 이 구조적으로 불가능하다.
 
 # 위험 패턴 (필요 시 팀 정책에 맞게 보강)
 patterns=(
@@ -37,9 +28,9 @@ patterns=(
 )
 
 for p in "${patterns[@]}"; do
-  if printf '%s' "$command" | grep -Eiq "$p"; then
+  if printf '%s' "$input" | grep -Eiq "$p"; then
     echo "🛑 위험 명령 차단: 패턴 '$p' 감지" >&2
-    echo "   명령: $command" >&2
+    echo "   입력에서 되돌리기 어려운 작업 패턴이 감지되었습니다." >&2
     echo "   되돌리기 어려운 작업입니다. 정말 실행하려면 사람이 직접 수행하세요." >&2
     exit 2
   fi
