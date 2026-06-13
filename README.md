@@ -38,21 +38,40 @@
 - `harness-decay-notify.sh` — 문서 decay 알림 (PostToolUse/Bash)
 
 ## 사용 Flow
-```
-0. /harness-root, /harness-module  →  검증 agent(6축) → 사람 승인
-1. /work  →  입력 → superpowers:brainstorming → 계획 검토 agent(7축) → 사람 게이트
-            → .harness/run-{id}.md 기록
-2. TDD 코드 작성 (자동)
-3. 완료기준(실행명령) 검증 (자동)
-   └ 실패 → bug-fix (≤5회 재시도, >5회 → /harness-check 자동)
-※ 산출물이 하네스와 다르면 언제든 /harness-check (수정은 사람)
+
+> 닫힌 루프를 실행하게 하여 사용자(사람)의 개입을 최소화 하는 방향으로 사용
+
+```mermaid
+flowchart TD
+    H["① 하네스 구축<br/>/harness-root · /harness-module"]:::harness
+    H --> W["② /work 시작<br/>입력 폼 수집"]:::auto
+    W --> P["③ 계획 (선택)<br/>brainstorming"]:::gate
+    P --> PR["④ 계획 검증<br/>plan-reviewer 7축"]:::gate
+    PR --> TDD["⑤ TDD 구현"]:::auto
+    TDD --> Q{"⑥ 결과물 OK?"}
+    Q -->|하네스 위반| HC
+    Q -->|OK| CRI["⑦ 완료기준 검증"]:::auto
+    CRI --> Q2{에러 발생?}
+    Q2 -->|에러| BF["bug-fix<br/>자동 수정"]:::auto
+    BF -->|재검증 ≤5회| CRI
+    Q2 -->|통과| DONE([✅ 완료 → 커밋]):::gate
+
+    BF -->|5회 초과·동일원인 재발| HC
+    HC["harness-check<br/>문서 진단(triage)"]:::harness
+    HC -->|규칙 갱신| H
+
+    classDef auto fill:#e7f5e7,stroke:#2e7d32,color:#1b3d1b
+    classDef gate fill:#fff3cd,stroke:#d39e00,color:#5c4500
+    classDef harness fill:#e3f0fb,stroke:#1565c0,color:#0d3b66
 ```
 
-- **자동 구간**: TDD → 완료기준 검증 → bug-fix
-- **사람 게이트**: ① 하네스 문서 반영(가드레일 변경), ② 커밋/푸시
+**범례** — 🟩 자동 구간 · 🟨 사람 게이트 · 🟦 하네스(규칙) 루프
+
+- **두 개의 닫힌 고리**
+  - **바깥 고리(규칙)**: ⑥ 결과물 불만/위반 또는 bug-fix 막힘 → `harness-check` → 규칙 갱신 → **① 하네스 구축으로 복귀**
+  - **안쪽 고리(코드)**: ⑦ 완료기준 검증 중 에러 → `bug-fix` → **재검증으로 복귀** (완료기준 명령별 ≤5회)
+- **자동 구간(🟩)**: TDD → 완료기준 검증 → bug-fix (핸드오프는 `.harness/logs/*.log` 파일 경유)
+- **사람 게이트(🟨)**: 계획 승인 · 결과물 판단 · 커밋/푸시  ※ ③④ 계획·계획검증은 계획 경로일 때만
 
 ## 상태 파일
 - `.harness/run-{id}.md` — 진행 상태(계획/단계/bug-fix 횟수/완료기준). work 가 생성, bug-fix 가 갱신.
-- `docs/harness-issues/` — Notion 기록 실패 시 harness-check 로컬 폴백.
-
-> 뼈대(스캐폴딩) 상태입니다. 각 스킬의 세부 오케스트레이션 로직은 점진적으로 채워나갑니다.
