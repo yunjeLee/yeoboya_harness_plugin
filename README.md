@@ -16,7 +16,7 @@
 
 ## 구성
 
-### Skills (8)
+### Skills
 | 스킬 | 역할 |
 |------|------|
 | `harness-root` | 루트 문서 7종(+UI_GUIDE) 초안 생성 |
@@ -28,14 +28,14 @@
 | `work` | 닫힌 루프 엔진 (입력→계획→검토→TDD→검증) |
 | `bug-fix` | 검증 실패 자동 수정 루프 (최대 5회) |
 
-### Sub-agents (3)
+### Sub-agents
 | Agent | 역할 |
 |------|------|
 | `harness-read-write` | 코드 읽고 문서 초안 작성 (sonnet) |
 | `harness-doc-verifier` | 문서 6축 검증 (opus, 대상=문서/생성 후) |
 | `plan-reviewer` | 계획 7축 검토 (opus, 대상=계획/실행 전) |
 
-### Hooks (2, 안전장치만)
+### Hooks
 | Hook | 역할 |
 |------|------|
 | `block-dangerous-command.sh` | 위험 명령 차단 (PreToolUse/Bash) |
@@ -43,7 +43,7 @@
 
 ## 생성 파일
 
-### `harness-root` — 루트 문서 7종(+UI_GUIDE)
+### `harness-root`
 | 파일 | 설명 |
 |------|------|
 | `CLAUDE.md` (루트) | 자동 로드 주체 — 자동 적재 `@`참조와 조건부 로딩 규칙(트리거)을 담는 그릇 |
@@ -55,14 +55,14 @@
 | `docs/rules/TESTING.md` | 조건부(test 편집 시) — build/lint/unit/통합/E2E 검증 명령의 단일 출처 |
 | `docs/rules/UI_GUIDE.md` (선택) | 조건부(지정 경로 접근 시) — UI/디자인시스템 가이드 |
 
-### `harness-module` — 모듈 문서
+### `harness-module`
 | 파일 | 설명 |
 |------|------|
 | `{module}/CLAUDE.md` | leaf 모듈별 ≤50줄 — 역할·금지·의존성·암묵규칙 |
 | `docs/rules/{module}.md` | 상위 묶음 모듈 rule — 계층 경계·의존성 방향·절대 금지 |
 | `docs/MODULE_MAP.md` | 전체 모듈 인덱스(leaf/상위 매핑) — 루트 CLAUDE.md 조건부 로딩과 연결 |
 
-### 상태·런타임 — `work` / `bug-fix` / `harness-check`
+### 상태·런타임
 | 파일 | 설명 |
 |------|------|
 | `.harness/run-{id}.md` | 진행 상태(계획/단계/완료기준/bug-fix 횟수/결정 로그). work 생성, bug-fix 갱신 |
