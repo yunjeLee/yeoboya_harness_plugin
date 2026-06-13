@@ -29,13 +29,45 @@
 | `bug-fix` | 검증 실패 자동 수정 루프 (최대 5회) |
 
 ### Sub-agents (3)
-- `harness-read-write` — 코드 읽고 문서 초안 작성 (sonnet)
-- `harness-doc-verifier` — 문서 6축 검증 (opus, 대상=문서/생성 후)
-- `plan-reviewer` — 계획 7축 검토 (opus, 대상=계획/실행 전)
+| Agent | 역할 |
+|------|------|
+| `harness-read-write` | 코드 읽고 문서 초안 작성 (sonnet) |
+| `harness-doc-verifier` | 문서 6축 검증 (opus, 대상=문서/생성 후) |
+| `plan-reviewer` | 계획 7축 검토 (opus, 대상=계획/실행 전) |
 
 ### Hooks (2, 안전장치만)
-- `block-dangerous-command.sh` — 위험 명령 차단 (PreToolUse/Bash)
-- `harness-decay-notify.sh` — 문서 decay 알림 (PostToolUse/Bash)
+| Hook | 역할 |
+|------|------|
+| `block-dangerous-command.sh` | 위험 명령 차단 (PreToolUse/Bash) |
+| `harness-decay-notify.sh` | 문서 decay 알림 (PostToolUse/Bash) |
+
+## 생성 파일
+
+### `harness-root` — 루트 문서 7종(+UI_GUIDE)
+| 파일 | 설명 |
+|------|------|
+| `CLAUDE.md` (루트) | 자동 로드 주체 — 자동 적재 `@`참조와 조건부 로딩 규칙(트리거)을 담는 그릇 |
+| `docs/ARCHITECTURE.md` | 자동 적재 — 모듈 구조·계층·의존성 방향 |
+| `docs/CONVENTIONS.md` | 자동 적재 — 코딩 규칙·네이밍·금지 패턴 |
+| `docs/SESSION.md` | 자동 적재 — 짧은 세션 규칙 목록 |
+| `docs/rules/PRD.md` | 조건부(신규 기능 시작 시) — 제품 요구사항 |
+| `docs/rules/ADR.md` | 조건부(의존성 매니페스트 편집 시) — 아키텍처 결정 기록 |
+| `docs/rules/TESTING.md` | 조건부(test 편집 시) — build/lint/unit/통합/E2E 검증 명령의 단일 출처 |
+| `docs/rules/UI_GUIDE.md` (선택) | 조건부(지정 경로 접근 시) — UI/디자인시스템 가이드 |
+
+### `harness-module` — 모듈 문서
+| 파일 | 설명 |
+|------|------|
+| `{module}/CLAUDE.md` | leaf 모듈별 ≤50줄 — 역할·금지·의존성·암묵규칙 |
+| `docs/rules/{module}.md` | 상위 묶음 모듈 rule — 계층 경계·의존성 방향·절대 금지 |
+| `docs/MODULE_MAP.md` | 전체 모듈 인덱스(leaf/상위 매핑) — 루트 CLAUDE.md 조건부 로딩과 연결 |
+
+### 상태·런타임 — `work` / `bug-fix` / `harness-check`
+| 파일 | 설명 |
+|------|------|
+| `.harness/run-{id}.md` | 진행 상태(계획/단계/완료기준/bug-fix 횟수/결정 로그). work 생성, bug-fix 갱신 |
+| `.harness/logs/{명령slug}.log` | 완료기준 명령 실행 로그 — bug-fix 가 받는 핸드오프 입력 |
+| `docs/harness-issues/{날짜}-{slug}.md` | harness-check 진단 기록의 로컬 폴백(Notion 기록 실패 시) |
 
 ## 사용 Flow
 
@@ -72,6 +104,3 @@ flowchart TD
   - **안쪽 고리(코드)**: ⑦ 완료기준 검증 중 에러 → `bug-fix` → **재검증으로 복귀** (완료기준 명령별 ≤5회)
 - **자동 구간(🟩)**: TDD → 완료기준 검증 → bug-fix (핸드오프는 `.harness/logs/*.log` 파일 경유)
 - **사람 게이트(🟨)**: 계획 승인 · 결과물 판단 · 커밋/푸시  ※ ③④ 계획·계획검증은 계획 경로일 때만
-
-## 상태 파일
-- `.harness/run-{id}.md` — 진행 상태(계획/단계/bug-fix 횟수/완료기준). work 가 생성, bug-fix 가 갱신.
