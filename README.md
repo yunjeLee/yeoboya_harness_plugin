@@ -1,4 +1,4 @@
-# yeoboya-workflow-v2
+# yeoboya-harness-plugin
 
 앱팀(Android / iOS) 공통 **harness-engineering** 워크플로우 플러그인 V2.
 계획 → TDD → 통합/E2E → 검증 → bug-fix 로 이어지는 **닫힌 루프**를 구성하고, 하네스 문서(규칙)로 Claude Code 에 프로젝트 그래프를 제공한다.
