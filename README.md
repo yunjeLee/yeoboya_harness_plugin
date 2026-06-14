@@ -39,7 +39,7 @@
 ### Script
 | Script | 역할 |
 |------|------|
-| `harness-module/script/harness-module-gen.js` | `harness-module` 이 호출하는 워크플로우 — 분류→leaf CLAUDE.md 병렬 작성→6축 검증→MODULE_MAP/루트 CLAUDE.md 집계→모듈 간 일관성 검증 격리 실행 |
+| `harness-module-gen.js` | `harness-module` 이 호출하는 워크플로우 — 분류→leaf CLAUDE.md 병렬 작성→6축 검증→MODULE_MAP/루트 CLAUDE.md 집계→모듈 간 일관성 검증 격리 실행 |
 
 ## 생성 파일
 
@@ -73,6 +73,7 @@
 
 > 닫힌 루프를 실행하게 하여 사용자(사람)의 개입을 최소화 하는 방향으로 사용
 
+🟩 자동 구간 · 🟨 사람 게이트 · 🟦 하네스(규칙)
 ```mermaid
 flowchart TD
     H["① 하네스 구축<br/>/harness-root · /harness-module"]:::harness
