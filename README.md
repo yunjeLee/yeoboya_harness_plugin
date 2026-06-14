@@ -3,12 +3,6 @@
 앱팀(Android / iOS) 공통 **harness-engineering** 워크플로우 플러그인 V2.
 계획 → TDD → 검증 → bug-fix 로 이어지는 **닫힌 루프**를 구성하고, 하네스 문서(규칙)로 Claude Code 에 프로젝트 그래프를 제공한다.
 
-## 설계 원칙 (V2)
-1. **한 스킬 = 한 파일.** 작은 스킬은 자체완결, 큰 스킬만 `shared/` 1개 참조.
-2. **거대 템플릿 금지 (≤50줄).** 긴 예시가 아니라 짧은 스키마.
-3. **hook 은 안전장치만.** 검증·테스트·카운터는 스킬 내부에서.
-4. **상태를 파일로 영속화.** `.harness/run-{id}.md` 로 세션 간 인수인계.
-
 ## 사전 요구
 - **`superpowers` 플러그인 (필수)** — `work` 가 `superpowers:brainstorming`(계획), `superpowers:test-driven-development`(TDD) 를 호출한다. 미설치 시 `/work` 의 계획·TDD 단계가 동작하지 않는다.
 - **Notion MCP (선택)** — `harness-check` 가 진단을 Notion 에 기록한다. 없으면 `docs/harness-issues/` 로컬 폴백으로 자동 전환된다.
