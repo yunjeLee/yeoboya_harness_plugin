@@ -1,10 +1,10 @@
 # yeoboya-harness-plugin
 
 앱팀(Android / iOS) 공통 **harness-engineering** 워크플로우 플러그인 V2.
-계획 → TDD → 통합/E2E → 검증 → bug-fix 로 이어지는 **닫힌 루프**를 구성하고, 하네스 문서(규칙)로 Claude Code 에 프로젝트 그래프를 제공한다.
+입력 → (계획 → 계획검수) → TDD → 통합/E2E → 검증 → bug-fix 로 이어지는 **닫힌 루프**를 구성하고, 하네스 문서(규칙)로 Claude Code 에 프로젝트 그래프를 제공한다.
 
 ## 사전 요구
-- **`superpowers` 플러그인 (필수)** — `work` 가 `superpowers:brainstorming`(계획), `superpowers:test-driven-development`(TDD) 를 호출한다. 미설치 시 `/work` 의 계획·TDD 단계가 동작하지 않는다.
+- **`superpowers` 플러그인 (필수)** — `work` 가 `superpowers:test-driven-development`(TDD) 를 호출한다. 미설치 시 `/work` 의 TDD 단계가 동작하지 않는다.
 - **Notion MCP (선택)** — `harness-check` 가 진단을 Notion 에 기록한다. 없으면 `docs/harness-issues/` 로컬 폴백으로 자동 전환된다.
 - **호스트 환경** — bash + git. (hook 은 외부 런타임 의존 없음)
 
@@ -13,13 +13,13 @@
 ### Skills
 | 스킬 | 역할 |
 |------|------|
-| `harness-root` | 루트 문서 7종(+UI_GUIDE) 초안 생성 |
+| `harness-root` | 루트 문서 8종 초안 생성 |
 | `harness-root-edit` | 루트 문서 인자 대상 편집 |
 | `harness-module` | leaf 모듈 CLAUDE.md + MODULE_MAP 병렬 생성 |
-| `harness-module-edit` | 모듈 CLAUDE.md 인자 대상 갱신 (decay 진입점) |
-| `harness-verify` | root/module 문서 6축 검증 (공용) |
+| `harness-module-edit` | 모듈 CLAUDE.md 인자 대상 갱신 |
+| `harness-verify` | root/module 문서 6축 검증 |
 | `harness-check` | 산출물↔하네스 불일치 진단 → Notion 기록 |
-| `work` | 닫힌 루프 엔진 (입력→계획→검토→TDD→통합/E2E→검증) |
+| `work` | 닫힌 루프 엔진 (입력→(계획→검토)→TDD→통합/E2E→검증) |
 | `bug-fix` | 검증 실패 자동 수정 루프 (최대 5회) |
 
 ### Sub-agents
@@ -46,10 +46,10 @@
 ### `harness-root`
 | 파일 | 설명 |
 |------|------|
-| `CLAUDE.md` (루트) | 자동 로드 주체 — 자동 적재 `@`참조와 조건부 로딩 규칙(트리거)을 담는 그릇 |
-| `docs/ARCHITECTURE.md` | 자동 적재 — 모듈 구조·계층·의존성 방향 |
-| `docs/CONVENTIONS.md` | 자동 적재 — 코딩 규칙·네이밍·금지 패턴 |
-| `docs/SESSION.md` | 자동 적재 — 짧은 세션 규칙 목록 |
+| `CLAUDE.md` | 자동 로드 주체 — 자동 적재 `@`참조와 조건부 로딩 규칙을 담는 그릇 |
+| `docs/ARCHITECTURE.md` | CLAUDE.md 적재 — 모듈 구조·계층·의존성 방향 |
+| `docs/CONVENTIONS.md` | CLAUDE.md 적재 — 코딩 규칙·네이밍·금지 패턴 |
+| `docs/SESSION.md` | CLAUDE.md 적재 — 짧은 세션 규칙 목록 |
 | `docs/rules/PRD.md` | 조건부(신규 기능 시작 시) — 제품 요구사항 |
 | `docs/rules/ADR.md` | 조건부(의존성 매니페스트 편집 시) — 아키텍처 결정 기록 |
 | `docs/rules/TESTING.md` | 조건부(test 편집 시) — build/lint/unit/통합/E2E 검증 명령의 단일 출처 |
@@ -77,7 +77,7 @@
 flowchart TD
     H["① 하네스 구축<br/>/harness-root · /harness-module"]:::harness
     H --> W["② /work 시작<br/>입력 폼 수집"]:::auto
-    W --> P["③ 계획 (선택)<br/>brainstorming"]:::gate
+    W --> P["③ 계획 (선택)"]:::gate
     P --> PR["④ 계획 검증<br/>plan-reviewer"]:::gate
     PR --> TDD["⑤ TDD 구현 (unit)"]:::auto
     TDD --> IT["⑤·5 통합/E2E 작성<br/>test-after (JVM 자동·E2E 수동 게이트)"]:::auto
