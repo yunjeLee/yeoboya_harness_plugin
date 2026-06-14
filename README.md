@@ -1,7 +1,7 @@
 # yeoboya-workflow-v2
 
 앱팀(Android / iOS) 공통 **harness-engineering** 워크플로우 플러그인 V2.
-계획 → TDD → 검증 → bug-fix 로 이어지는 **닫힌 루프**를 구성하고, 하네스 문서(규칙)로 Claude Code 에 프로젝트 그래프를 제공한다.
+계획 → TDD → 통합/E2E → 검증 → bug-fix 로 이어지는 **닫힌 루프**를 구성하고, 하네스 문서(규칙)로 Claude Code 에 프로젝트 그래프를 제공한다.
 
 ## 사전 요구
 - **`superpowers` 플러그인 (필수)** — `work` 가 `superpowers:brainstorming`(계획), `superpowers:test-driven-development`(TDD) 를 호출한다. 미설치 시 `/work` 의 계획·TDD 단계가 동작하지 않는다.
@@ -19,7 +19,7 @@
 | `harness-module-edit` | 모듈 CLAUDE.md 인자 대상 갱신 (decay 진입점) |
 | `harness-verify` | root/module 문서 6축 검증 (공용) |
 | `harness-check` | 산출물↔하네스 불일치 진단 → Notion 기록 |
-| `work` | 닫힌 루프 엔진 (입력→계획→검토→TDD→검증) |
+| `work` | 닫힌 루프 엔진 (입력→계획→검토→TDD→통합/E2E→검증) |
 | `bug-fix` | 검증 실패 자동 수정 루프 (최대 5회) |
 
 ### Sub-agents
@@ -35,6 +35,11 @@
 |------|------|
 | `block-dangerous-command.sh` | 위험 명령 차단 (PreToolUse/Bash) |
 | `harness-decay-notify.sh` | 문서 decay 알림 (PostToolUse/Bash) |
+
+### Script
+| Script | 역할 |
+|------|------|
+| `harness-module/script/harness-module-gen.js` | `harness-module` 이 호출하는 워크플로우 — 분류→leaf CLAUDE.md 병렬 작성→6축 검증→MODULE_MAP/루트 CLAUDE.md 집계→모듈 간 일관성 검증 격리 실행 |
 
 ## 생성 파일
 
@@ -74,8 +79,9 @@ flowchart TD
     H --> W["② /work 시작<br/>입력 폼 수집"]:::auto
     W --> P["③ 계획 (선택)<br/>brainstorming"]:::gate
     P --> PR["④ 계획 검증<br/>plan-reviewer"]:::gate
-    PR --> TDD["⑤ TDD 구현"]:::auto
-    TDD --> Q{"⑥ 결과물 OK?"}
+    PR --> TDD["⑤ TDD 구현 (unit)"]:::auto
+    TDD --> IT["⑤·5 통합/E2E 작성<br/>test-after (JVM 자동·E2E 수동 게이트)"]:::auto
+    IT --> Q{"⑥ 결과물 OK?"}
     Q -->|하네스 위반| HC
     Q -->|OK| CRI["⑦ 완료기준 검증<br/>completion-verifier"]:::auto
     CRI --> Q2{에러 발생?}
