@@ -34,6 +34,7 @@
 | `harness-read-write` | 코드 읽고 문서 초안 작성 (sonnet) |
 | `harness-doc-verifier` | 문서 6축 검증 (opus, 대상=문서/생성 후) |
 | `plan-reviewer` | 계획 7축 검토 (opus, 대상=계획/실행 전) |
+| `completion-verifier` | 완료기준 명령 격리 실행·결과 보고 (opus, 대상=확정 완료기준 명령/검증 시점) |
 
 ### Hooks
 | Hook | 역할 |
@@ -78,11 +79,11 @@ flowchart TD
     H["① 하네스 구축<br/>/harness-root · /harness-module"]:::harness
     H --> W["② /work 시작<br/>입력 폼 수집"]:::auto
     W --> P["③ 계획 (선택)<br/>brainstorming"]:::gate
-    P --> PR["④ 계획 검증<br/>plan-reviewer 7축"]:::gate
+    P --> PR["④ 계획 검증<br/>plan-reviewer"]:::gate
     PR --> TDD["⑤ TDD 구현"]:::auto
     TDD --> Q{"⑥ 결과물 OK?"}
     Q -->|하네스 위반| HC
-    Q -->|OK| CRI["⑦ 완료기준 검증"]:::auto
+    Q -->|OK| CRI["⑦ 완료기준 검증<br/>completion-verifier"]:::auto
     CRI --> Q2{에러 발생?}
     Q2 -->|에러| BF["bug-fix<br/>자동 수정"]:::auto
     BF -->|재검증 ≤5회| CRI
@@ -96,11 +97,3 @@ flowchart TD
     classDef gate fill:#fff3cd,stroke:#d39e00,color:#5c4500
     classDef harness fill:#e3f0fb,stroke:#1565c0,color:#0d3b66
 ```
-
-**범례** — 🟩 자동 구간 · 🟨 사람 게이트 · 🟦 하네스(규칙) 루프
-
-- **두 개의 닫힌 고리**
-  - **바깥 고리(규칙)**: ⑥ 결과물 불만/위반 또는 bug-fix 막힘 → `harness-check` → 규칙 갱신 → **① 하네스 구축으로 복귀**
-  - **안쪽 고리(코드)**: ⑦ 완료기준 검증 중 에러 → `bug-fix` → **재검증으로 복귀** (완료기준 명령별 ≤5회)
-- **자동 구간(🟩)**: TDD → 완료기준 검증 → bug-fix (핸드오프는 `.harness/logs/*.log` 파일 경유)
-- **사람 게이트(🟨)**: 계획 승인 · 결과물 판단 · 커밋/푸시  ※ ③④ 계획·계획검증은 계획 경로일 때만
