@@ -6,7 +6,6 @@
 ## 사전 요구
 - **`superpowers` 플러그인 (필수)** — `work` 가 `superpowers:test-driven-development`(TDD) 를 호출한다. 미설치 시 `/work` 의 TDD 단계가 동작하지 않는다.
 - **Notion MCP (선택)** — `harness-check` 가 진단을 Notion 에 기록한다. 없으면 `docs/harness-issues/` 로컬 폴백으로 자동 전환된다.
-- **호스트 환경** — bash + git. (hook 은 외부 런타임 의존 없음)
 
 ## 구성
 
@@ -81,7 +80,7 @@ flowchart TD
     W --> P["③ 계획 (선택)"]:::gate
     P --> PR["④ 계획 검증<br/>plan-reviewer"]:::gate
     PR --> TDD["⑤ TDD 구현 (unit)"]:::auto
-    TDD --> IT["⑤·5 통합/E2E 작성<br/>test-after (JVM 자동·E2E 수동 게이트)"]:::auto
+    TDD --> IT["⑤-1 통합/E2E 작성<br/>test-after"]:::auto
     IT --> Q{"⑥ 결과물 OK?"}
     Q -->|하네스 위반| HC
     Q -->|OK| CRI["⑦ 완료기준 검증<br/>completion-verifier"]:::auto
