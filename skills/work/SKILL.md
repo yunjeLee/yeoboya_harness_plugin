@@ -1,6 +1,6 @@
 ---
 name: work
-description: "기능 작업의 닫힌 루프 엔진. 입력 폼 수집 → (선택) superpowers:brainstorming 계획 → 계획이 있으면만 검토 agent(7축) → .harness/run-{id}.md 상태 기록 → superpowers:test-driven-development 구현(unit) → 통합/E2E test-after 작성 → 완료기준(실행명령) 검증 → 실패 시 bug-fix. /work, 작업 시작, 기능 구현해줘, 계획 세우고 구현 요청 시 사용한다."
+description: "기능 작업의 닫힌 루프 엔진. 입력 폼 수집 → (선택) superpowers:brainstorming 계획 → 계획이 있으면만 검토 agent(7축) → .harness/runs/run-{id}.md 상태 기록 → superpowers:test-driven-development 구현(unit) → 통합/E2E test-after 작성 → 완료기준(실행명령) 검증 → 실패 시 bug-fix. /work, 작업 시작, 기능 구현해줘, 계획 세우고 구현 요청 시 사용한다."
 model: opus
 ---
 
@@ -22,7 +22,7 @@ model: opus
 ## 내부 흐름
 0. **의존 점검**: `superpowers` 스킬(brainstorming/test-driven-development) 사용 가능 여부를 확인한다. 없으면 사용자에게 설치를 안내하고 중단한다. (조용한 실패 방지)
 
-0.5. **재개 점검 (멱등성)**: `.harness/run-*.md` 중 **미완료**(남은 완료기준 체크리스트가 비어있지 않은) 항목을 찾는다.
+0.5. **재개 점검 (멱등성)**: `.harness/runs/run-*.md` 중 **미완료**(남은 완료기준 체크리스트가 비어있지 않은) 항목을 찾는다.
    - 있으면 → 파일의 "현재 단계"를 사람에게 보여주고 "거기서 재개할지 / 새로 시작할지" 묻는다. 재개면 해당 단계로 점프(입력·번역 재수집 생략).
    - 없거나 새로 시작 → 신규 id 생성. **id 규칙**: `run-{KST}-{요구slug}` 형식.
      - KST 시각은 `TZ=Asia/Seoul date +%Y%m%d-%H%M` 로 얻는다. (예: `run-20260613-1430-payment-refund.md`)
@@ -38,14 +38,14 @@ model: opus
 
 3. **계획 분기 (선택)**: 요구사항에 따라 계획 단계를 탄다/건너뛴다.
    - 사용자가 계획을 요청했거나 `xxx.md` 계획 문서를 입력 → 계획 경로 (`superpowers:brainstorming`).
-   - 계획 없이 바로 구현 요청 → 계획 건너뜀. `.harness/run-{id}.md` 에 "계획 생략" 1줄 기록 (세션 이어받을 때 계획 부재 사유 추적용).
+   - 계획 없이 바로 구현 요청 → 계획 건너뜀. `.harness/runs/run-{id}.md` 에 "계획 생략" 1줄 기록 (세션 이어받을 때 계획 부재 사유 추적용).
 
 4. **계획 검토 (조건부)**: 계획이 존재할 때만 `plan-reviewer` 에이전트(7축) → 사람 게이트.
    - 계획이 없으면 이 단계 건너뜀.
    - 하네스(CONVENTIONS / ARCHITECTURE) 위반 발견 시 → `/harness-check` 로 분기.
    - ⚠️ 계획 생략 경로에서는 6축(하네스 정합성) 사전 게이트가 없다 → 6번 TDD 단계의 가드로 회수한다.
 
-5. **상태 기록**: `.harness/run-{id}.md` 에 계획 / 현재 단계 / bug-fix 시도 횟수 / 남은 완료기준(확정 명령) 기록 (멀티세션 영속화 — 세션이 끊겨도 이어받음).
+5. **상태 기록**: `.harness/runs/run-{id}.md` 에 계획 / 현재 단계 / bug-fix 시도 횟수 / 남은 완료기준(확정 명령) 기록 (멀티세션 영속화 — 세션이 끊겨도 이어받음).
    - **.gitignore 가드 (`.harness/` 최초 생성 시)**: run 파일을 쓰기 직전, 대상 프로젝트 루트 `.gitignore` 에 `.harness/` 항목이 있는지 확인하고 **없으면 한 줄 추가**한다(파일이 없으면 새로 생성). 이미 있으면 아무것도 하지 않는다(멱등). `.harness/` 는 커밋되면 안 되는 런타임 상태이기 때문 — 첫 run 파일이 곧 `.harness/` 의 최초 생성 시점이므로 여기서 1회 보장한다.
 
 6. **TDD 구현**: `superpowers:test-driven-development` (테스트 먼저). 코드는 무조건 TDD 로 작성.
@@ -56,7 +56,7 @@ model: opus
    - **작성 범위**: 이번 변경이 가로지른 모듈 경계를 git diff·임포트로 탐지해 그것만 작성한다. 완료 기준에 경계가 명시됐으면(예: "core·data 통합") 그걸 우선한다.
    - **레벨 분기** (TESTING.md 기준):
      - JVM 통합(Robolectric/in-memory) → 작성 후 즉시 실행해 통과 확인. 실패 시 → `bug-fix`.
-     - 기기 E2E(Espresso/Maestro) → 이번 work 가 *플로우를 완성시킨 경우만* 작성. 코드·실행 명령만 준비하고 **자동 실행하지 않는다**. `.harness/run-{id}.md` 에 "E2E: 수동 실행 대기" 기록.
+     - 기기 E2E(Espresso/Maestro) → 이번 work 가 *플로우를 완성시킨 경우만* 작성. 코드·실행 명령만 준비하고 **자동 실행하지 않는다**. `.harness/runs/run-{id}.md` 에 "E2E: 수동 실행 대기" 기록.
    - **가드**: test-after 사각지대 방지 — "크래시 안 남"이 아니라 경계를 건너는 데이터·계약을 실제로 단언한다. (규칙은 TESTING.md 단일 출처)
 
 7. **완료기준 검증**: 확정된 완료기준 명령의 **실행을 `completion-verifier` 에이전트에 위임**한다. work 는 직접 실행하지 않고 결과만 받아 분기를 판단한다 (실행은 agent, 분기 판단은 work — 무거운 테스트 출력의 메인 컨텍스트 오염 방지).
@@ -64,7 +64,7 @@ model: opus
    - **에이전트 책임**: 각 명령을 `<명령> 2>&1 | tee .harness/logs/{명령slug}.log` 로 실행(로그 캡처 필수, 파일 경유 핸드오프 — 설계 원칙 4)하고, 명령별 통과/실패·로그 경로·실패 원인 시그니처(에러코드)를 보고한다.
    - **분기**: 에이전트 결과가 `has-failure` 면 → 실패 명령의 로그 경로를 `bug-fix` 에 전달해 분기한다. (bug-fix 는 같은 `.harness/logs/*.log` 를 읽으므로 실행 주체가 바뀌어도 무변경.)
 
-## 상태 파일 `.harness/run-{id}.md` 골격
+## 상태 파일 `.harness/runs/run-{id}.md` 골격
 - 요구/완료기준(명령) / 계획 요약 / 현재 단계 / 완료기준별 bug-fix 시도 횟수 / 남은 완료기준 체크리스트 / **실패 로그 경로(.harness/logs/*.log)** / **E2E 수동 실행 대기 목록** / **결정 로그(bug-fix 시도별 1줄 누적)**
 
 ## 원칙

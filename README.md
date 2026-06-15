@@ -1,11 +1,10 @@
 # yeoboya-harness-plugin
 
 앱팀(Android / iOS) 공통 **harness-engineering** 워크플로우 플러그인 V2.
-입력 → (계획 → 계획검수) → TDD → 통합/E2E → 검증 → bug-fix 로 이어지는 **닫힌 루프**를 구성하고, 하네스 문서(규칙)로 Claude Code 에 프로젝트 그래프를 제공한다.
+입력 → (계획 → 계획검수) → TDD → 통합/E2E → 검증 → bug-fix 로 이어지는 **닫힌 루프**를 구성하고, 하네스 문서로 Claude Code 에 프로젝트 그래프를 제공한다.
 
 ## 사전 요구
 - **`superpowers` 플러그인 (필수)** — `work` 가 `superpowers:test-driven-development`(TDD) 를 호출한다. 미설치 시 `/work` 의 TDD 단계가 동작하지 않는다.
-- **Notion MCP (선택)** — `harness-check` 가 진단을 Notion 에 기록한다. 없으면 `docs/harness-issues/` 로컬 폴백으로 자동 전환된다.
 
 ## 구성
 
@@ -17,7 +16,7 @@
 | `harness-module` | leaf 모듈 CLAUDE.md + MODULE_MAP 병렬 생성 |
 | `harness-module-edit` | 모듈 CLAUDE.md 인자 대상 갱신 |
 | `harness-verify` | root/module 문서 6축 검증 |
-| `harness-check` | 산출물↔하네스 불일치 진단 → Notion 기록 |
+| `harness-check` | 산출물↔하네스 불일치 진단 → 로컬 기록 |
 | `work` | 닫힌 루프 엔진 (입력→(계획→검토)→TDD→통합/E2E→검증) |
 | `bug-fix` | 검증 실패 자동 수정 루프 (최대 5회) |
 
@@ -25,9 +24,9 @@
 | Agent | 역할 |
 |------|------|
 | `harness-read-write` | 코드 읽고 문서 초안 작성 (sonnet) |
-| `harness-doc-verifier` | 문서 6축 검증 (opus, 대상=문서/생성 후) |
-| `plan-reviewer` | 계획 7축 검토 (opus, 대상=계획/실행 전) |
-| `completion-verifier` | 완료기준 명령 격리 실행·결과 보고 (opus, 대상=확정 완료기준 명령/검증 시점) |
+| `harness-doc-verifier` | 문서 6축 검증 (opus) |
+| `plan-reviewer` | 계획 7축 검토 (opus) |
+| `completion-verifier` | 완료기준 명령 격리 실행·결과 보고 (opus) |
 
 ### Hooks
 | Hook | 역할 |
@@ -64,9 +63,9 @@
 ### 상태·런타임
 | 파일 | 설명 |
 |------|------|
-| `.harness/run-{id}.md` | 진행 상태(계획/단계/완료기준/bug-fix 횟수/결정 로그). work 생성, bug-fix 갱신. **`.harness/` 최초 생성 시 대상 프로젝트 `.gitignore` 에 `.harness/` 자동 등록** |
+| `.harness/runs/run-{id}.md` | 진행 상태(계획/단계/완료기준/bug-fix 횟수/결정 로그). work 생성, bug-fix 갱신. **`.harness/` 최초 생성 시 대상 프로젝트 `.gitignore` 에 `.harness/` 자동 등록** |
 | `.harness/logs/{명령slug}.log` | 완료기준 명령 실행 로그 — bug-fix 가 받는 핸드오프 입력 |
-| `docs/harness-issues/{날짜}-{slug}.md` | harness-check 진단 기록의 로컬 폴백(Notion 기록 실패 시) |
+| `.harness/issues/{날짜}/{시간}-{slug}.md` | harness-check 진단 기록(로컬) |
 
 ## 사용 Flow
 
