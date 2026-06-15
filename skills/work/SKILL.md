@@ -46,6 +46,7 @@ model: opus
    - ⚠️ 계획 생략 경로에서는 6축(하네스 정합성) 사전 게이트가 없다 → 6번 TDD 단계의 가드로 회수한다.
 
 5. **상태 기록**: `.harness/run-{id}.md` 에 계획 / 현재 단계 / bug-fix 시도 횟수 / 남은 완료기준(확정 명령) 기록 (멀티세션 영속화 — 세션이 끊겨도 이어받음).
+   - **.gitignore 가드 (`.harness/` 최초 생성 시)**: run 파일을 쓰기 직전, 대상 프로젝트 루트 `.gitignore` 에 `.harness/` 항목이 있는지 확인하고 **없으면 한 줄 추가**한다(파일이 없으면 새로 생성). 이미 있으면 아무것도 하지 않는다(멱등). `.harness/` 는 커밋되면 안 되는 런타임 상태이기 때문 — 첫 run 파일이 곧 `.harness/` 의 최초 생성 시점이므로 여기서 1회 보장한다.
 
 6. **TDD 구현**: `superpowers:test-driven-development` (테스트 먼저). 코드는 무조건 TDD 로 작성.
    - 계획 생략 경로일 때: 구현 중 CONVENTIONS / ARCHITECTURE 위반을 감지하면 즉시 멈추고 `/harness-check` 로 분기 (사라진 사전 게이트를 여기서 회수).

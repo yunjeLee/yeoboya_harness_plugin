@@ -64,7 +64,7 @@
 ### 상태·런타임
 | 파일 | 설명 |
 |------|------|
-| `.harness/run-{id}.md` | 진행 상태(계획/단계/완료기준/bug-fix 횟수/결정 로그). work 생성, bug-fix 갱신 |
+| `.harness/run-{id}.md` | 진행 상태(계획/단계/완료기준/bug-fix 횟수/결정 로그). work 생성, bug-fix 갱신. **`.harness/` 최초 생성 시 대상 프로젝트 `.gitignore` 에 `.harness/` 자동 등록** |
 | `.harness/logs/{명령slug}.log` | 완료기준 명령 실행 로그 — bug-fix 가 받는 핸드오프 입력 |
 | `docs/harness-issues/{날짜}-{slug}.md` | harness-check 진단 기록의 로컬 폴백(Notion 기록 실패 시) |
 
