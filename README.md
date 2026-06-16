@@ -15,6 +15,7 @@
 | `harness-root-edit` | 루트 문서 인자 대상 편집 |
 | `harness-module` | leaf 모듈 CLAUDE.md + MODULE_MAP 병렬 생성 |
 | `harness-module-edit` | 모듈 CLAUDE.md 인자 대상 갱신 |
+| `harness-update` | 변경분(git diff) 기준 하네스 문서 일괄 reconcile (drift 감지→갱신→재검증) |
 | `harness-verify` | root/module 문서 6축 검증 |
 | `harness-check` | 산출물↔하네스 불일치 진단 → 로컬 기록 |
 | `work` | 닫힌 루프 엔진 (입력→(계획→검토)→TDD→통합/E2E→검증) |
@@ -38,6 +39,8 @@
 | Script | 역할 |
 |------|------|
 | `harness-module-gen.js` | `harness-module` 이 호출하는 워크플로우 — 분류→leaf CLAUDE.md 병렬 작성→6축 검증→MODULE_MAP/루트 CLAUDE.md 집계→모듈 간 일관성 검증 격리 실행 |
+| `harness-update-scope.sh` | `harness-update` 의 결정론적 스코핑 — 변경분(git diff)→갱신 후보 문서(module/root/rule) 매핑 |
+| `harness-update.js` | `harness-update` 이 호출하는 워크플로우 — 후보 6축 검증으로 drift 감지→썩은 문서만 최소 diff 갱신→재검증 격리 실행 |
 
 ## 생성 파일
 
@@ -66,6 +69,7 @@
 | `.harness/runs/run-{id}.md` | 진행 상태(계획/단계/완료기준/bug-fix 횟수/결정 로그). work 생성, bug-fix 갱신. **`.harness/` 최초 생성 시 대상 프로젝트 `.gitignore` 에 `.harness/` 자동 등록** |
 | `.harness/logs/{명령slug}.log` | 완료기준 명령 실행 로그 — bug-fix 가 받는 핸드오프 입력 |
 | `.harness/issues/{날짜}/{시간}-{slug}.md` | harness-check 진단 기록(로컬) |
+| `.harness/last-update` | harness-update 가 승인 시 기록하는 직전 적용 커밋 SHA — 다음 실행의 변경분 기준점 |
 
 ## 사용 Flow
 
@@ -87,6 +91,8 @@ flowchart TD
     Q2 -->|에러| BF["bug-fix<br/>자동 수정"]:::auto
     BF -->|재검증 ≤5회| CRI
     Q2 -->|통과| DONE([✅ 완료 → 커밋]):::gate
+    DONE --> HU["⑧ 변경분 문서 동기화<br/>/harness-update"]:::auto
+    HU -->|drift 갱신·재검증| H
 
     BF -->|5회 초과·동일원인 재발| HC
     HC["harness-check<br/>문서 진단(triage)"]:::harness
