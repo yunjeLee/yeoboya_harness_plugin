@@ -91,6 +91,8 @@ flowchart TD
     Q2 -->|에러| BF["bug-fix<br/>자동 수정"]:::auto
     BF -->|재검증 ≤5회| CRI
     Q2 -->|통과| DONE([✅ 완료 → 커밋]):::gate
+    DONE --> HU["⑧ 변경분 문서 동기화<br/>/harness-update"]:::auto
+    HU -->|drift 갱신·재검증| H
 
     BF -->|5회 초과·동일원인 재발| HC
     HC["harness-check<br/>문서 진단(triage)"]:::harness
