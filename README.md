@@ -1,6 +1,6 @@
 # yeoboya-harness-plugin
 
-앱팀(Android / iOS) 공통 **harness-engineering** 워크플로우 플러그인 V2.
+앱팀(Android / iOS) 공통 **harness-engineering** 워크플로우 플러그인.
 입력 → (계획 → 계획검수) → TDD → 통합/E2E → 검증 → bug-fix 로 이어지는 **닫힌 루프**를 구성하고, 하네스 문서로 Claude Code 에 프로젝트 그래프를 제공한다.
 
 ## 사전 요구
@@ -15,7 +15,7 @@
 | `harness-root-edit` | 루트 문서 인자 대상 편집 |
 | `harness-module` | leaf 모듈 CLAUDE.md + MODULE_MAP 병렬 생성 |
 | `harness-module-edit` | 모듈 CLAUDE.md 인자 대상 갱신 |
-| `harness-update` | 변경분(git diff) 기준 하네스 문서 일괄 reconcile (drift 감지→갱신→재검증) |
+| `harness-update` | 변경분(git diff) 기준 하네스 문서 일괄 update |
 | `harness-verify` | root/module 문서 6축 검증 |
 | `harness-check` | 산출물↔하네스 불일치 진단 → 로컬 기록 |
 | `work` | 닫힌 루프 엔진 (입력→(계획→검토)→TDD→통합/E2E→검증) |
@@ -39,7 +39,7 @@
 | Script | 역할 |
 |------|------|
 | `harness-module-gen.js` | `harness-module` 이 호출하는 워크플로우 — 분류→leaf CLAUDE.md 병렬 작성→6축 검증→MODULE_MAP/루트 CLAUDE.md 집계→모듈 간 일관성 검증 격리 실행 |
-| `harness-update-scope.sh` | `harness-update` 의 결정론적 스코핑 — 변경분(git diff)→갱신 후보 문서(module/root/rule) 매핑 |
+| `harness-update-scope.sh` | `harness-update` 의 결정론적 스코핑 — 변경분→갱신 후보 문서(module/root/rule) 매핑 |
 | `harness-update.js` | `harness-update` 이 호출하는 워크플로우 — 후보 6축 검증으로 drift 감지→썩은 문서만 최소 diff 갱신→재검증 격리 실행 |
 
 ## 생성 파일
@@ -78,20 +78,20 @@
 🟩 자동 구간 · 🟨 사람 게이트 · 🟦 하네스(규칙)
 ```mermaid
 flowchart TD
-    H["① 하네스 구축<br/>/harness-root · /harness-module"]:::harness
-    H --> W["② /work 시작<br/>입력 폼 수집"]:::auto
-    W --> P["③ 계획 (선택)"]:::gate
-    P --> PR["④ 계획 검증<br/>plan-reviewer"]:::gate
-    PR --> TDD["⑤ TDD 구현 (unit)"]:::auto
-    TDD --> IT["⑤-1 통합/E2E 작성<br/>test-after"]:::auto
-    IT --> Q{"⑥ 결과물 OK?"}
+    H["하네스 구축<br/>/harness-root · /harness-module"]:::harness
+    H --> W["/work 시작<br/>입력 폼 수집"]:::auto
+    W --> P["계획 (선택)"]:::gate
+    P --> PR["계획 검증<br/>plan-reviewer"]:::gate
+    PR --> TDD["TDD 구현 (unit)"]:::auto
+    TDD --> IT["통합/E2E 작성<br/>test-after"]:::auto
+    IT --> Q{"결과물 OK?"}
     Q -->|하네스 위반| HC
-    Q -->|OK| CRI["⑦ 완료기준 검증<br/>completion-verifier"]:::auto
+    Q -->|OK| CRI["완료기준 검증<br/>completion-verifier"]:::auto
     CRI --> Q2{에러 발생?}
     Q2 -->|에러| BF["bug-fix<br/>자동 수정"]:::auto
     BF -->|재검증 ≤5회| CRI
     Q2 -->|통과| DONE([✅ 완료 → 커밋]):::gate
-    DONE --> HU["⑧ 변경분 문서 동기화<br/>/harness-update"]:::auto
+    DONE --> HU["변경분 문서 동기화<br/>/harness-update"]:::auto
     HU -->|drift 갱신·재검증| H
 
     BF -->|5회 초과·동일원인 재발| HC
