@@ -15,7 +15,7 @@
 | `harness-root-edit` | 루트 문서 인자 대상 편집 |
 | `harness-module` | leaf 모듈 CLAUDE.md + MODULE_MAP 병렬 생성 |
 | `harness-module-edit` | 모듈 CLAUDE.md 인자 대상 갱신 |
-| `harness-update` | 변경분(git diff) 기준 하네스 문서 일괄 update |
+| `harness-update` | 변경분(git diff) 기준 하네스 문서 주기적 update (변경 추출 -> update -> 검증) |
 | `harness-verify` | root/module 문서 6축 검증 |
 | `harness-check` | 산출물↔하네스 불일치 진단 → 로컬 기록 |
 | `work` | 닫힌 루프 엔진 (입력→(계획→검토)→TDD→통합/E2E→검증) |
@@ -91,7 +91,7 @@ flowchart TD
     Q2 -->|에러| BF["bug-fix<br/>자동 수정"]:::auto
     BF -->|재검증 ≤5회| CRI
     Q2 -->|통과| DONE([✅ 완료 → 커밋]):::gate
-    DONE --> HU["변경분 문서 동기화<br/>/harness-update"]:::auto
+    DONE --> HU["변경분 문서 동기화<br/>(주기적 업데이트)<br/>/harness-update"]:::auto
     HU -->|drift 갱신·재검증| H
 
     BF -->|5회 초과·동일원인 재발| HC
