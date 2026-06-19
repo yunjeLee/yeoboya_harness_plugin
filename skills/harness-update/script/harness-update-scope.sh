@@ -59,7 +59,7 @@ changed="$(git diff --name-only "${baseSha}..HEAD" 2>/dev/null || true)"
     [ -z "$f" ] && continue
     # 구조 파일 변경 → 루트 ARCHITECTURE/CONVENTIONS 후보 신호
     case "$f" in
-      settings.gradle*|build.gradle*|*/build.gradle*|*.gradle|*/AndroidManifest.xml|*/di/*|*/inject/*) structural=1 ;;
+      settings.gradle*|build.gradle*|*/build.gradle*|*.gradle|*/AndroidManifest.xml|*/di/*|*/inject/*|*.pbxproj|Package.swift|*/Package.swift|Podfile|*.podspec|*.xcconfig) structural=1 ;;
     esac
     # 변경 파일 → 가장 가까운 조상 CLAUDE.md (= 그 모듈 문서)
     d="$(dirname "$f")"

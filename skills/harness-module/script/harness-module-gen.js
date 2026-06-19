@@ -36,7 +36,7 @@ const SCOUT_SCHEMA = {
         required: ['path'],
         properties: {
           path: { type: 'string', description: '모듈 경로 (예: core/core-util)' },
-          gradlePath: { type: 'string', description: 'gradle 태스크 경로 (예: :core:core-util)' },
+          taskPath: { type: 'string', description: '빌드 태스크/타깃 경로 (예) Android: :core:core-util, iOS: 스킴/타깃명' },
         },
       },
     },
@@ -184,7 +184,7 @@ function indexPrompt(scout, leaf, upper) {
 phase('Scout')
 const scout = await agent(
   [
-    `${repoRoot} 의 멀티모듈 구조를 스캔한다 (settings.gradle / build.gradle / 소스 유무 근거).`,
+    `${repoRoot} 의 멀티모듈 구조를 스캔한다 (Android: settings.gradle/build.gradle, iOS: Package.swift/*.xcworkspace/Podfile, 또는 소스 유무 근거).`,
     `- leaf 모듈(코드가 실제 있는 모듈: core-*, data-*, feature-* 등) 중 CLAUDE.md 가 없는 것만 leafMissing 에.`,
     `- 상위 묶음 모듈(app/core/data/domain/feature 같은 컨테이너) 중 docs/rules/{module}.md 가 없는 것만 upperMissing 에.`,
     `이미 문서가 있는 모듈은 제외한다. 추론이 아니라 코드 근거로만 분류한다.`,

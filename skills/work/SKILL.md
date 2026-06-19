@@ -17,7 +17,7 @@ model: opus
 - **참고 코드**: `@path` 로 입력
 - **완료 기준**: **자연어로 입력 가능** — 예) "결제 모듈 unit test 하고, a·b 모듈 통합테스트 해줘".
   - 사용자가 매번 정확한 명령을 외울 필요 없다. work 가 아래 "완료 기준 번역" 단계에서 실행 명령으로 변환한다.
-  - 이미 정확한 명령(예: `./gradlew :payment:test`)을 알면 그대로 적어도 된다.
+  - 이미 정확한 명령(예: Android `./gradlew :payment:test` / iOS `xcodebuild test -scheme Payment`)을 알면 그대로 적어도 된다.
 
 ## 내부 흐름
 0. **의존 점검**: `superpowers` 스킬(brainstorming/test-driven-development) 사용 가능 여부를 확인한다. 없으면 사용자에게 설치를 안내하고 중단한다. (조용한 실패 방지)
@@ -31,7 +31,7 @@ model: opus
 1. **입력 수집** (위 폼).
 
 2. **완료 기준 번역**: 자연어 완료 기준을 **실행 가능한 명령으로 변환**한다.
-   - `@docs/rules/TESTING.md` 의 검증 명령어(build / lint / unit / integration / E2E)를 단일 출처로 참조하고, 입력에 등장한 모듈명을 끼워 명령을 조립한다. (예: "a·b 통합테스트" → `./gradlew :a:test :b:test` 또는 TESTING.md 가 정의한 통합테스트 태스크)
+   - `@docs/rules/TESTING.md` 의 검증 명령어(build / lint / unit / integration / E2E)를 단일 출처로 참조하고, 입력에 등장한 모듈명을 끼워 명령을 조립한다. (예: "a·b 통합테스트" → Android `./gradlew :a:test :b:test` / iOS `xcodebuild test`, 또는 TESTING.md 가 정의한 통합테스트 태스크)
    - 조립한 명령 목록을 **사람에게 확인**받는다. (잘못된 명령이 bug-fix 루프의 입력이 되는 걸 막음)
    - 이후 단계·저장은 모두 **확정된 실행 명령**으로 다룬다. (bug-fix 루프의 입력원)
    - ⚠️ **부트스트랩 가드**: TESTING.md 의 통합/E2E 검증 명령·작성 규칙이 비어 있으면(그린필드) → 명령 조립을 멈추고 `/harness-root`(또는 `/harness-root-edit testing`) 로 분기해 테스트 스택을 먼저 확정한다. (빈 규칙이 루프 입력이 되는 걸 차단 — bug-fix 5회→harness-check 와 같은 원리)
@@ -42,7 +42,10 @@ model: opus
 
 4. **계획 검토 (조건부)**: 계획이 존재할 때만 `plan-reviewer` 에이전트(7축) → 사람 게이트.
    - 계획이 없으면 이 단계 건너뜀.
-   - 하네스(CONVENTIONS / ARCHITECTURE) 위반 발견 시 → `/harness-check` 로 분기.
+   - **판정별 처리** (plan-reviewer 의 종합 판정으로 분기):
+     - `proceed` → 5번으로 진행.
+     - `fix-plan` → **자동 수정 금지.** 검토 결과(축별 위반·근거)와 **구체적 수정 제안**을 사람에게 보여주고, **승인을 받은 뒤에만** 계획을 수정한다. 사람이 수정안을 바꾸거나 거부하면 그 입력을 반영한다. 승인 없이 5번으로 넘어가지 않는다.
+     - `route-to-harness-check` → `/harness-check` 로 분기.
    - ⚠️ 계획 생략 경로에서는 6축(하네스 정합성) 사전 게이트가 없다 → 6번 TDD 단계의 가드로 회수한다.
 
 5. **상태 기록**: `.harness/runs/run-{id}.md` 에 계획 / 현재 단계 / bug-fix 시도 횟수 / 남은 완료기준(확정 명령) 기록 (멀티세션 영속화 — 세션이 끊겨도 이어받음).
@@ -54,13 +57,13 @@ model: opus
 
 6.5. **통합/E2E 테스트 작성 (test-after)**: TDD 로 코드가 동작한 뒤, 모듈 경계를 검증한다.
    - **작성 범위**: 이번 변경이 가로지른 모듈 경계를 git diff·임포트로 탐지해 그것만 작성한다. 완료 기준에 경계가 명시됐으면(예: "core·data 통합") 그걸 우선한다.
-   - **레벨 분기** (TESTING.md 기준):
-     - JVM 통합(Robolectric/in-memory) → 작성 후 즉시 실행해 통과 확인. 실패 시 → `bug-fix`.
-     - 기기 E2E(Espresso/Maestro) → 이번 work 가 *플로우를 완성시킨 경우만* 작성. 코드·실행 명령만 준비하고 **자동 실행하지 않는다**. `.harness/runs/run-{id}.md` 에 "E2E: 수동 실행 대기" 기록.
+   - **레벨 분기** (TESTING.md 기준 — 플랫폼 도구는 TESTING.md 가 정의):
+     - 호스트 자동 통합(예: Android JVM/Robolectric, iOS XCTest) → 작성 후 즉시 실행해 통과 확인. 실패 시 → `bug-fix`.
+     - 기기/시뮬레이터 E2E(예: Android Espresso/Maestro, iOS XCUITest/Maestro) → 이번 work 가 *플로우를 완성시킨 경우만* 작성. 코드·실행 명령만 준비하고 **자동 실행하지 않는다**. `.harness/runs/run-{id}.md` 에 "E2E: 수동 실행 대기" 기록.
    - **가드**: test-after 사각지대 방지 — "크래시 안 남"이 아니라 경계를 건너는 데이터·계약을 실제로 단언한다. (규칙은 TESTING.md 단일 출처)
 
 7. **완료기준 검증**: 확정된 완료기준 명령의 **실행을 `completion-verifier` 에이전트에 위임**한다. work 는 직접 실행하지 않고 결과만 받아 분기를 판단한다 (실행은 agent, 분기 판단은 work — 무거운 테스트 출력의 메인 컨텍스트 오염 방지).
-   - **위임 입력**: 확정 완료기준 명령 목록 + run-id + 통합 검증용 전체 JVM 스위트 명령(이번에 안 건드린 경계의 회귀까지 검출).
+   - **위임 입력**: 확정 완료기준 명령 목록 + run-id + 통합 검증용 전체 테스트 스위트 명령(호스트 자동 레벨 — 이번에 안 건드린 경계의 회귀까지 검출).
    - **에이전트 책임**: 각 명령을 `<명령> 2>&1 | tee .harness/logs/{명령slug}.log` 로 실행(로그 캡처 필수, 파일 경유 핸드오프 — 설계 원칙 4)하고, 명령별 통과/실패·로그 경로·실패 원인 시그니처(에러코드)를 보고한다.
    - **분기**: 에이전트 결과가 `has-failure` 면 → 실패 명령의 로그 경로를 `bug-fix` 에 전달해 분기한다. (bug-fix 는 같은 `.harness/logs/*.log` 를 읽으므로 실행 주체가 바뀌어도 무변경.)
 
