@@ -3,14 +3,14 @@
   "owner": { "name": "yeoboya" },
   "metadata": {
     "description": "yeoboya 앱팀 공통 플러그인 카탈로그 (V2)",
-    "version": "0.5.4"
+    "version": "0.5.5"
   },
   "plugins": [
     {
       "name": "yeoboya-workflow-v2",
       "source": "./",
       "description": "앱팀 공통 harness-engineering 워크플로우 플러그인 V2 (Android / iOS)",
-      "version": "0.5.4"
+      "version": "0.5.5"
     }
   ]
 }
