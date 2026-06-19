@@ -19,6 +19,8 @@
 | `harness-verify` | root/module 문서 6축 검증 |
 | `harness-check` | 산출물↔하네스 불일치 진단 → 로컬 기록 |
 | `work` | 닫힌 루프 엔진 (입력→(계획→검토)→TDD→통합/E2E→검증) |
+| `integration-test` | 모듈 경계 통합 테스트 **코드 작성** (test-after). work 6.5 가 경계 감지 시 호출 — 실행은 안 함 |
+| `e2e-test` | 사용자 플로우 E2E 테스트 **코드 작성** (test-after). work 6.5 가 플로우 완성 시 호출 — 자동 실행 안 함(사람 게이트) |
 | `bug-fix` | 검증 실패 자동 수정 루프 (최대 5회) |
 
 ### Sub-agents
@@ -83,8 +85,11 @@ flowchart TD
     W --> P["계획 (선택)"]:::gate
     P --> PR["계획 검증<br/>plan-reviewer"]:::gate
     PR --> TDD["TDD 구현 (unit)"]:::auto
-    TDD --> IT["통합/E2E 작성<br/>test-after"]:::auto
-    IT --> Q{"결과물 OK?"}
+    TDD --> IT["통합/E2E 필요 판단<br/>(work 6.5)<br/>호출/생략 사유 기록"]:::auto
+    IT -->|모듈 경계 가로지름| ITS["integration-test<br/>통합 코드 작성"]:::auto
+    IT -->|플로우 완성| E2E["e2e-test<br/>E2E 코드 작성"]:::auto
+    ITS --> Q{"결과물 OK?"}
+    E2E --> Q
     Q -->|하네스 위반| HC
     Q -->|OK| CRI["완료기준 검증<br/>completion-verifier"]:::auto
     CRI --> Q2{에러 발생?}
