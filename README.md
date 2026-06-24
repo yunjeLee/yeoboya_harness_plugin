@@ -22,6 +22,7 @@
 | `integration-test` | 모듈 경계 통합 테스트 **코드 작성** (test-after). work 6.5 가 경계 감지 시 호출 — 실행은 안 함 |
 | `e2e-test` | 사용자 플로우 E2E 테스트 **코드 작성** (test-after). work 6.5 가 플로우 완성 시 호출 — 자동 실행 안 함(사람 게이트) |
 | `bug-fix` | 검증 실패 자동 수정 루프 (최대 5회) |
+| `pin` | 진행 중 work 의 현재 상태를 활성 run 파일에 즉시 스냅샷 (갱신만) |
 
 ### Sub-agents
 | Agent | 역할 |
@@ -35,6 +36,7 @@
 | Hook | 역할 |
 |------|------|
 | `block-dangerous-command.sh` | 위험 명령 차단 (PreToolUse/Bash) |
+| `require-completion-criteria.sh` | run 파일에 완료기준 체크리스트 없으면 차단 (PreToolUse/Write) |
 | `harness-decay-notify.sh` | 문서 decay 알림 (PostToolUse/Bash) |
 
 ### Script
