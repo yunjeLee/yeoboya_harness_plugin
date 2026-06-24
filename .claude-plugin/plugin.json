@@ -1,6 +1,6 @@
 {
   "name": "yeoboya-workflow-v2",
-  "version": "0.5.5",
+  "version": "0.5.6",
   "description": "앱팀 공통 harness-engineering 워크플로우 플러그인 V2 (Android / iOS) — 계획→TDD→검증→bug-fix 닫힌 루프",
   "author": {
     "name": "yeoboya"
@@ -11,6 +11,12 @@
         "matcher": "Bash",
         "hooks": [
           { "type": "command", "command": "${CLAUDE_PLUGIN_ROOT}/hooks/block-dangerous-command.sh" }
+        ]
+      },
+      {
+        "matcher": "Write",
+        "hooks": [
+          { "type": "command", "command": "${CLAUDE_PLUGIN_ROOT}/hooks/require-completion-criteria.sh" }
         ]
       }
     ],
