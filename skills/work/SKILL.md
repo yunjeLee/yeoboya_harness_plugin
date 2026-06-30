@@ -75,7 +75,7 @@ model: opus
 7. **완료기준 검증**: 확정된 완료기준 명령의 **실행을 `completion-verifier` 에이전트에 위임**한다. work 는 직접 실행하지 않고 결과만 받아 분기를 판단한다 (실행은 agent, 분기 판단은 work — 무거운 테스트 출력의 메인 컨텍스트 오염 방지).
    - **위임 입력**: 확정 완료기준 명령 목록 + run-id + 통합 검증용 전체 테스트 스위트 명령(호스트 자동 레벨 — 이번에 안 건드린 경계의 회귀까지 검출).
    - **에이전트 책임**: 각 명령을 `<명령> 2>&1 | tee .harness/logs/{명령slug}.log` 로 실행(로그 캡처 필수, 파일 경유 핸드오프 — 설계 원칙 4)하고, 명령별 통과/실패·로그 경로·실패 원인 시그니처(에러코드)를 보고한다.
-   - **분기**: 에이전트 결과가 `has-failure` 면 → 실패 명령의 로그 경로를 `bug-fix` 에 전달해 분기한다. (bug-fix 는 같은 `.harness/logs/*.log` 를 읽으므로 실행 주체가 바뀌어도 무변경.)
+   - **분기**: 에이전트 결과가 `has-failure` 면 → `shared/bug-fix-loop.md` 를 Read 해 그 루프를 **work 컨텍스트에서 직접 실행**한다(외부 호출 불가 — work 내부에서만 진입). 같은 `.harness/logs/*.log` 를 입력으로 받는다.
 
 ## 상태 파일 `.harness/runs/run-{id}.md` 골격
 - **완료기준은 `<!-- COMPLETION-CRITERIA:START -->` ~ `<!-- COMPLETION-CRITERIA:END -->` 마커 블록 안에 `- [ ] <실행명령>` 으로** (bug-fix·completion-verifier 가 읽는 구간 — 마커 밖 체크박스는 무관)

@@ -21,7 +21,6 @@
 | `work` | 닫힌 루프 엔진 (입력→(계획→검토)→TDD→통합/E2E→검증) |
 | `integration-test` | 모듈 경계 통합 테스트 **코드 작성** (test-after). work 6.5 가 경계 감지 시 호출 — 실행은 안 함 |
 | `e2e-test` | 사용자 플로우 E2E 테스트 **코드 작성** (test-after). work 6.5 가 플로우 완성 시 호출 — 자동 실행 안 함(사람 게이트) |
-| `bug-fix` | 검증 실패 자동 수정 루프 (최대 5회) |
 | `pin` | 진행 중 work 의 현재 상태를 활성 run 파일에 즉시 스냅샷 (갱신만) |
 
 ### Sub-agents
@@ -44,6 +43,11 @@
 | `harness-module-gen.js` | `harness-module` 이 호출하는 워크플로우 — 분류→leaf CLAUDE.md 병렬 작성→6축 검증→MODULE_MAP/루트 CLAUDE.md 집계→모듈 간 일관성 검증 격리 실행 |
 | `harness-update-scope.sh` | `harness-update` 의 결정론적 스코핑 — 변경분→갱신 후보 문서(module/root/rule) 매핑 |
 | `harness-update.js` | `harness-update` 이 호출하는 워크플로우 — 후보 6축 검증으로 drift 감지→썩은 문서만 최소 diff 갱신→재검증 격리 실행 |
+
+### 내부 루프 문서 (스킬 아님 — `/` 노출 안 됨)
+| 문서 | 역할 |
+|------|------|
+| `shared/bug-fix-loop.md` | 검증 실패 자동 수정 루프 (최대 5회). work 7단계가 Read 해 실행 — 외부 직접 호출 불가 |
 
 ## 생성 파일
 
