@@ -36,7 +36,6 @@
 | Hook | 역할 |
 |------|------|
 | `block-dangerous-command.sh` | 위험 명령 차단 (PreToolUse/Bash) |
-| `require-completion-criteria.sh` | run 파일에 완료기준 체크리스트 없으면 차단 (PreToolUse/Write) |
 | `harness-decay-notify.sh` | 문서 decay 알림 (PostToolUse/Bash) |
 
 ### Script

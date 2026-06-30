@@ -49,7 +49,7 @@ model: opus
    - ⚠️ 계획 생략 경로에서는 6축(하네스 정합성) 사전 게이트가 없다 → 6번 TDD 단계의 가드로 회수한다.
 
 5. **상태 기록**: `.harness/runs/run-{id}.md` 를 **Write 로 생성**한다. 계획 / 현재 단계 / bug-fix 시도 횟수 / 남은 완료기준(확정 명령) 기록 (멀티세션 영속화 — 세션이 끊겨도 이어받음).
-   - ⚠️ **완료기준 마커 블록 (hook 게이트 대상)**: 완료기준은 반드시 아래 마커 사이에 `- [ ] <실행명령>` 형식으로 1줄 이상 적는다. 비어 있으면 `require-completion-criteria` hook 이 Write 를 차단한다(exit 2) → 사용자에게 완료기준을 다시 묻는다. 마커 **밖**의 체크박스(진행 상태·계획 목록 등)는 게이트와 무관하다.
+   - ⚠️ **완료기준 마커 블록**: 완료기준은 반드시 아래 마커 사이에 `- [ ] <실행명령>` 형식으로 1줄 이상 적는다. 비어 있으면(완료기준 미확정) run 파일을 쓰지 말고 사용자에게 완료기준을 다시 묻는다 — 완료기준 없는 run 파일은 bug-fix 루프의 빈 입력이 된다. 마커 **밖**의 체크박스(진행 상태·계획 목록 등)는 완료기준과 무관하다.
      ```markdown
      <!-- COMPLETION-CRITERIA:START -->
      ## 완료기준(실행명령)
@@ -78,7 +78,7 @@ model: opus
    - **분기**: 에이전트 결과가 `has-failure` 면 → 실패 명령의 로그 경로를 `bug-fix` 에 전달해 분기한다. (bug-fix 는 같은 `.harness/logs/*.log` 를 읽으므로 실행 주체가 바뀌어도 무변경.)
 
 ## 상태 파일 `.harness/runs/run-{id}.md` 골격
-- **완료기준은 `<!-- COMPLETION-CRITERIA:START -->` ~ `<!-- COMPLETION-CRITERIA:END -->` 마커 블록 안에 `- [ ] <실행명령>` 으로** (hook 게이트 대상 — 마커 밖 체크박스는 무관)
+- **완료기준은 `<!-- COMPLETION-CRITERIA:START -->` ~ `<!-- COMPLETION-CRITERIA:END -->` 마커 블록 안에 `- [ ] <실행명령>` 으로** (bug-fix·completion-verifier 가 읽는 구간 — 마커 밖 체크박스는 무관)
 - 요구/완료기준(명령) / 계획 요약 / 현재 단계 / 완료기준별 bug-fix 시도 횟수 / 남은 완료기준 체크리스트 / **실패 로그 경로(.harness/logs/*.log)** / **통합·E2E 위임 로그(`integration-test`·`e2e-test` 각각 호출 / 생략+사유)** / **E2E 수동 실행 대기 목록** / **결정 로그(bug-fix 시도별 1줄 누적)**
 
 ## 원칙
